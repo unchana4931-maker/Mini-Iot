@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบควบคุมอุปกรณ์อัจฉริยะ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #f4f7f6;
+            --bg-card: #ffffff;
+            --primary: #0087ff;
+            --primary-hover: #006ecf;
+            --primary-light: #e6f3ff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --gray-border: #e2e8f0;
+            --success: #2ecc71;
+            --shadow: 0 10px 25px rgba(0, 135, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'ChulaCharasNew', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            border: 1px solid var(--gray-border);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--bg-main);
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 i {
+            color: var(--primary);
+        }
+
+        .refresh-btn {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .refresh-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Grid System */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--gray-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.03);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* UI Controls Elements */
+        /* Toggle Switch */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-toggle {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider-toggle:before {
+            transform: translateX(26px);
+        }
+
+        /* Custom Slider Range */
+        .range-container {
+            margin-top: auto;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: var(--gray-border);
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 135, 255, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .range-value {
+            text-align: right;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        /* LED Status Indicator */
+        .led-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .led-light {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .led-light.active {
+            background-color: var(--success);
+            box-shadow: 0 0 15px var(--success);
+        }
+
+        .led-text {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Gauge / Value Display */
+        .gauge-display {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-top: auto;
+        }
+
+        .gauge-unit {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        /* Label / Response text */
+        .label-response {
+            background: var(--bg-main);
+            padding: 12px;
+            border-radius: 12px;
+            font-family: monospace;
+            color: #34495e;
+            font-size: 0.95rem;
+            margin-top: auto;
+            word-break: break-all;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Logger Section */
+        .log-section {
+            margin-top: 2rem;
+            background: var(--bg-main);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .dashboard-container {
+                padding: 1.5rem;
+            }
+            .header h1 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <div class="header">
+            <h1><i class="fa-solid fa-gauge-high"></i> แผงควบคุมระบบอัจฉริยะ</h1>
+            <button class="refresh-btn" onclick="fetchAllData()">
+                <i class="fa-solid fa-sync" id="refresh-icon"></i> รีเฟรชข้อมูล
+            </button>
+        </div>
+
+        <div class="grid">
+            
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-power-off" style="color: #e74c3c;"></i> ปุ่มเปิด / ปิด อุปกรณ์
+                </div>
+                <div class="switch-container">
+                    <span id="btn-status-text" style="font-weight:600; color: var(--text-muted);">ปิดการใช้งาน</span>
+                    <label class="switch">
+                        <input type="checkbox" id="blynk-button" onchange="toggleButton(this.checked)">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-sliders" style="color: var(--primary);"></i> ระดับการปรับค่า
+                </div>
+                <div class="range-container">
+                    <div class="range-value" id="slider-val">0</div>
+                    <input type="range" min="0" max="255" value="0" class="range-slider" id="blynk-slider" onchange="updateSlider(this.value)" oninput="document.getElementById('slider-val').innerText = this.value">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-circle-dot" style="color: var(--success);"></i> สถานะการทำงานระบบ
+                </div>
+                <div class="led-container">
+                    <div class="led-light" id="blynk-led"></div>
+                    <span class="led-text" id="led-status-text">กำลังตรวจสอบ...</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-thermometer-half" style="color: #e67e22;"></i> อุณหภูมิปัจจุบัน
+                </div>
+                <div class="gauge-display">
+                    <span id="blynk-gauge">0</span><span class="gauge-unit">°C</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-comment-dots" style="color: #9b59b6;"></i> ข้อความตอบกลับจากระบบ
+                </div>
+                <div class="label-response" id="blynk-label">
+                    กำลังโหลดข้อมูล...
+                </div>
+            </div>
+
+        </div>
+
+        <div class="log-section" id="api-log">
+            ระบบเริ่มต้นการทำงาน... กำลังเชื่อมต่อฐานข้อมูล Blynk Cloud
+        </div>
+    </div>
+
+    <script>
+        const BLYNK_TOKEN = "ZmjwyCi4tGWAJzkUlB_oYMDwC2OPLYFR";
+        const BASE_URL = "https://blynk.cloud/external/api";
+
+        function logMsg(message) {
+            const logBox = document.getElementById('api-log');
+            const time = new Date().toLocaleTimeString();
+            logBox.innerHTML = `[${time}] ${message}<br>` + logBox.innerHTML;
+        }
+
+        // ควบคุม ปุ่มเปิด/ปิด (V0)
+        async function toggleButton(isOn) {
+            const value = isOn ? 1 : 0;
+            document.getElementById('btn-status-text').innerText = isOn ? "เปิดการใช้งาน" : "ปิดการใช้งาน";
+            document.getElementById('btn-status-text').style.color = isOn ? "var(--success)" : "var(--text-muted)";
+            
+            try {
+                const response = await fetch(`${BASE_URL}/update?token=${BLYNK_TOKEN}&V0=${value}`);
+                if(response.ok) {
+                    logMsg(`ส่งคำสั่งสวิตช์ -> ${isOn ? 'เปิดอุปกรณ์' : 'ปิดอุปกรณ์'} สำเร็จ`);
+                } else {
+                    logMsg(`ส่งคำสั่งสวิตช์ล้มเหลว`);
+                }
+            } catch (error) {
+                logMsg(`เกิดข้อผิดพลาดในการเชื่อมต่อสวิตช์: ${error}`);
+            }
+        }
+
+        // ควบคุม Slider (V2)
+        async function updateSlider(value) {
+            try {
+                const response = await fetch(`${BASE_URL}/update?token=${BLYNK_TOKEN}&V2=${value}`);
+                if(response.ok) {
+                    logMsg(`อัปเดตระดับค่าใหม่ -> ${value} สำเร็จ`);
+                } else {
+                    logMsg(`ส่งค่าระดับล้มเหลว`);
+                }
+            } catch (error) {
+                logMsg(`เกิดข้อผิดพลาดในการเชื่อมต่อตัวปรับค่า: ${error}`);
+            }
+        }
+
+        // ดึงข้อมูล V1 (LED Status)
+        async function getLedStatus() {
+            try {
+                const response = await fetch(`${BASE_URL}/get?token=${BLYNK_TOKEN}&V1`);
+                if(response.ok) {
+                    const val = await response.text();
+                    const led = document.getElementById('blynk-led');
+                    const text = document.getElementById('led-status-text');
+                    
+                    if(val.trim() == "1") {
+                        led.classList.add('active');
+                        text.innerText = "เปิดทำงานอยู่ (ON)";
+                        text.style.color = "var(--success)";
+                    } else {
+                        led.classList.remove('active');
+                        text.innerText = "ปิดทำงานอยู่ (OFF)";
+                        text.style.color = "var(--text-dark)";
+                    }
+                }
+            } catch (e) { console.error("ดึงข้อมูลสถานะล้มเหลว", e); }
+        }
+
+        // ดึงข้อมูล V3 (Temperature Gauge)
+        async function getGaugeValue() {
+            try {
+                const response = await fetch(`${BASE_URL}/get?token=${BLYNK_TOKEN}&V3`);
+                if(response.ok) {
+                    const val = await response.text();
+                    document.getElementById('blynk-gauge').innerText = val.trim();
+                }
+            } catch (e) { console.error("ดึงข้อมูลอุณหภูมิล้มเหลว", e); }
+        }
+
+        // ดึงข้อมูล V4 (String Label)
+        async function getLabelText() {
+            try {
+                const response = await fetch(`${BASE_URL}/get?token=${BLYNK_TOKEN}&V4`);
+                if(response.ok) {
+                    const val = await response.text();
+                    document.getElementById('blynk-label').innerText = val;
+                }
+            } catch (e) { console.error("ดึงข้อมูลข้อความล้มเหลว", e); }
+        }
+
+        // ฟังก์ชันในการกดดึงข้อมูลพร้อมกันทั้งหมด
+        async function fetchAllData() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('fa-spin');
+            
+            logMsg("กำลังอัปเดตข้อมูลล่าสุดจากคลาวด์...");
+            
+            await Promise.all([
+                getLedStatus(),
+                getGaugeValue(),
+                getLabelText()
+            ]);
+
+            // ซิงค์สถานะหน้าเว็บให้ตรงกับค่าจริงบนคลาวด์ (V0 และ V2)
+            try {
+                const resV0 = await fetch(`${BASE_URL}/get?token=${BLYNK_TOKEN}&V0`);
+                if(resV0.ok) {
+                    const valV0 = (await resV0.text()).trim();
+                    const isOn = valV0 == "1";
+                    document.getElementById('blynk-button').checked = isOn;
+                    document.getElementById('btn-status-text').innerText = isOn ? "เปิดการใช้งาน" : "ปิดการใช้งาน";
+                    document.getElementById('btn-status-text').style.color = isOn ? "var(--success)" : "var(--text-muted)";
+                }
+                const resV2 = await fetch(`${BASE_URL}/get?token=${BLYNK_TOKEN}&V2`);
+                if(resV2.ok) {
+                    const valV2 = (await resV2.text()).trim();
+                    document.getElementById('blynk-slider').value = valV2;
+                    document.getElementById('slider-val').innerText = valV2;
+                }
+            } catch(e) { console.log("ซิงค์ค่าเริ่มต้นล้มเหลว"); }
+
+            setTimeout(() => { icon.classList.remove('fa-spin'); }, 500);
+        }
+
+        window.onload = function() {
+            fetchAllData();
+            // รีเฟรชข้อมูลอัตโนมัติทุกๆ 5 วินาที
+            setInterval(fetchAllData, 5000);
+        };
+    </script>
+</body>
+</html>
